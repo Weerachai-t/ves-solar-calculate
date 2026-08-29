@@ -1,26 +1,14 @@
 'use client';
-
-import { useMemo, useState } from 'react';
-
-export default function Home() {
-  const [bill, setBill] = useState(3000);
-  const [dayUse, setDayUse] = useState(60);
-  const result = useMemo(() => {
-    const monthlyKwh = bill / 4.2;
-    const solarKwh = monthlyKwh * (dayUse / 100);
-    const kwp = Math.max(1, solarKwh / 120);
-    const size = Math.ceil(kwp * 2) / 2;
-    const annual = size * 1450;
-    const saving = Math.min(annual * 4.2, bill * 12 * dayUse / 100);
-    const investment = size * 28000;
-    return { size, annual, saving, investment, payback: investment / Math.max(saving, 1) };
-  }, [bill, dayUse]);
-
-  return <main>
-    <nav><div className="brand"><span className="ves">VES</span><span className="dot"/> <b>Solar Calculate</b></div><a href="#calculator">เริ่มคำนวณ</a></nav>
-    <section className="hero"><div><p className="eyebrow">VES SOLAR ENERGY</p><h1>คำนวณ Solar Rooftop<br/><span>ให้เหมาะกับการใช้ไฟของคุณ</span></h1><p>ประเมินขนาดระบบ ผลผลิตไฟฟ้า เงินประหยัด และระยะเวลาคืนทุนเบื้องต้นได้ภายในไม่กี่ขั้นตอน</p><a className="primary" href="#calculator">เริ่มคำนวณฟรี →</a></div><div className="sun"><div className="panel">☀<br/><strong>{result.size.toFixed(1)} kWp</strong><small>ระบบแนะนำเบื้องต้น</small></div></div></section>
-    <section id="calculator" className="calculator"><div className="form"><p className="eyebrow">SOLAR CALCULATOR</p><h2>ข้อมูลการใช้ไฟฟ้า</h2><label>ค่าไฟเฉลี่ยต่อเดือน (บาท)<input type="number" value={bill} onChange={e=>setBill(Number(e.target.value))}/></label><label>สัดส่วนการใช้ไฟช่วงกลางวัน <b>{dayUse}%</b><input type="range" min="10" max="100" value={dayUse} onChange={e=>setDayUse(Number(e.target.value))}/></label><p className="hint">* ผลลัพธ์เป็นการประเมินเบื้องต้น สมมติค่าไฟเฉลี่ย 4.20 บาท/kWh และผลผลิตเฉลี่ย 1,450 kWh/kWp/ปี</p></div><div className="results"><p>ระบบที่แนะนำ</p><strong className="big">{result.size.toFixed(1)} <small>kWp</small></strong><div className="grid"><article><span>☀️ ผลิตไฟ/ปี</span><b>{Math.round(result.annual).toLocaleString()} kWh</b></article><article><span>💰 ประหยัด/ปี</span><b>฿{Math.round(result.saving).toLocaleString()}</b></article><article><span>🏗️ เงินลงทุนประมาณ</span><b>฿{Math.round(result.investment).toLocaleString()}</b></article><article><span>⏱️ คืนทุน</span><b>{result.payback.toFixed(1)} ปี</b></article></div><button>ดูผลวิเคราะห์ฉบับเต็ม</button></div></section>
-    <section className="features"><h2>จากค่าไฟ สู่การตัดสินใจลงทุนที่ชัดเจน</h2><div><article>01<h3>Solar Sizing</h3><p>ประเมินขนาดติดตั้งที่สัมพันธ์กับพฤติกรรมการใช้ไฟ</p></article><article>02<h3>Energy Analysis</h3><p>ประมาณการพลังงานจากระบบ Solar Rooftop รายปี</p></article><article>03<h3>Financial Analysis</h3><p>ดูเงินประหยัด เงินลงทุน และระยะเวลาคืนทุน</p></article></div></section>
-    <footer><b>VES Solar Calculate</b><span>V Engineering Solutions Co., Ltd. · www.vengineering.co.th</span></footer>
-  </main>;
+import {useMemo,useState} from 'react';
+const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const factors=[.92,.98,1.08,1.06,.99,.91,.88,.91,.94,.96,.91,.86];
+export default function Home(){
+ const [bill,setBill]=useState(5000),[dayUse,setDayUse]=useState(60),[tariff,setTariff]=useState(4.2),[type,setType]=useState('บ้านพักอาศัย'),[lat,setLat]=useState(14.35),[lng,setLng]=useState(100.57),[exportMode,setExportMode]=useState('Zero Export'),[investmentPerKw,setInvestmentPerKw]=useState(28000);
+ const r=useMemo(()=>{const monthly=bill/tariff,usable=monthly*dayUse/100,size=Math.ceil(Math.max(1,usable/120)*2)/2,annual=size*1450,used=Math.min(annual,monthly*12*dayUse/100),saving=used*tariff,investment=size*investmentPerKw,payback=investment/Math.max(saving,1),roi=saving/investment*100;return{monthly,size,annual,used,saving,investment,payback,roi,co2:annual*.499,monthlySolar:factors.map(x=>annual/12*x)}} ,[bill,dayUse,tariff,investmentPerKw]);
+ return <main><nav><div className="brand"><span className="ves">VES</span><span className="dot"/><b>Solar Calculate</b></div><a href="#calculator">เริ่มคำนวณ</a></nav>
+ <section className="hero"><div><p className="eyebrow">VES SOLAR ENERGY · PHASE 2</p><h1>วิเคราะห์ Solar Rooftop<br/><span>ทั้งพลังงานและการลงทุน</span></h1><p>คำนวณขนาดระบบ ผลผลิตไฟฟ้า เงินประหยัด ROI และ Payback พร้อมประมาณการผลผลิตรายเดือน</p><a className="primary" href="#calculator">เริ่มวิเคราะห์ →</a></div><div className="sun"><div className="panel">☀<strong>{r.size.toFixed(1)} kWp</strong><small>ระบบแนะนำ</small></div></div></section>
+ <section id="calculator" className="calculator"><div className="form"><p className="eyebrow">PROJECT INPUT</p><h2>ข้อมูลโครงการ</h2><label>ประเภทผู้ใช้<select value={type} onChange={e=>setType(e.target.value)}><option>บ้านพักอาศัย</option><option>ธุรกิจ / SME</option><option>โรงงานอุตสาหกรรม</option></select></label><div className="two"><label>Latitude<input type="number" step=".0001" value={lat} onChange={e=>setLat(+e.target.value)}/></label><label>Longitude<input type="number" step=".0001" value={lng} onChange={e=>setLng(+e.target.value)}/></label></div><label>ค่าไฟเฉลี่ย/เดือน (บาท)<input type="number" value={bill} onChange={e=>setBill(+e.target.value)}/></label><div className="two"><label>ค่าไฟ (บาท/kWh)<input type="number" step=".01" value={tariff} onChange={e=>setTariff(+e.target.value)}/></label><label>โหมดระบบ<select value={exportMode} onChange={e=>setExportMode(e.target.value)}><option>Zero Export</option><option>Self Consumption</option><option>Export / Sell Back</option></select></label></div><label>ใช้ไฟช่วงกลางวัน <b>{dayUse}%</b><input type="range" min="10" max="100" value={dayUse} onChange={e=>setDayUse(+e.target.value)}/></label><label>งบติดตั้งต่อ kWp (บาท)<input type="number" value={investmentPerKw} onChange={e=>setInvestmentPerKw(+e.target.value)}/></label><p className="hint">ตำแหน่ง {lat.toFixed(4)}, {lng.toFixed(4)} · {type} · {exportMode}<br/>Phase 2 ใช้โมเดลประมาณการเบื้องต้น; ขั้น API จะดึง Solar Irradiance ตามพิกัดจริง</p></div>
+ <div className="results"><p>VES ANALYSIS RESULT</p><strong className="big">{r.size.toFixed(1)} <small>kWp</small></strong><div className="grid"><article><span>☀️ ผลิตไฟ/ปี</span><b>{Math.round(r.annual).toLocaleString()} kWh</b></article><article><span>💰 ประหยัด/ปี</span><b>฿{Math.round(r.saving).toLocaleString()}</b></article><article><span>📈 ROI</span><b>{r.roi.toFixed(1)}%</b></article><article><span>⏱️ Payback</span><b>{r.payback.toFixed(1)} ปี</b></article><article><span>🏗️ เงินลงทุน</span><b>฿{Math.round(r.investment).toLocaleString()}</b></article><article><span>🌱 CO₂ ลดลง</span><b>{(r.co2/1000).toFixed(1)} ton/ปี</b></article></div><button onClick={()=>window.print()}>พิมพ์ / บันทึก PDF</button></div></section>
+ <section className="chartSec"><p className="eyebrow">12 MONTH PRODUCTION</p><h2>ประมาณการผลิตไฟฟ้ารายเดือน</h2><div className="bars">{r.monthlySolar.map((v,i)=><div className="barWrap" key={months[i]}><span>{Math.round(v)}</span><div className="bar" style={{height:`${Math.max(30,v/Math.max(...r.monthlySolar)*180)}px`}}/><small>{months[i]}</small></div>)}</div></section>
+ <section className="features"><h2>VES Solar Financial Snapshot</h2><div><article>01<h3>Solar Sizing</h3><p>{r.size.toFixed(1)} kWp จากโหลดกลางวันประมาณ {dayUse}%</p></article><article>02<h3>Energy Saving</h3><p>ประหยัดสะสม 25 ปีแบบไม่คิด escalation ประมาณ ฿{Math.round(r.saving*25).toLocaleString()}</p></article><article>03<h3>Investment</h3><p>คืนทุนประมาณ {r.payback.toFixed(1)} ปี และ ROI ปีแรก {r.roi.toFixed(1)}%</p></article></div></section><footer><b>VES Solar Calculate · Phase 2</b><span>V Engineering Solutions Co., Ltd. · www.vengineering.co.th</span></footer></main>;
 }
