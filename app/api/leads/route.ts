@@ -1,12 +1,14 @@
 import {NextResponse} from 'next/server';
 import {ensureLeadTable} from '@/lib/db';
+import {requireAdmin} from '@/lib/admin-auth';
 
 type Lead={name:string;phone:string;email?:string;company?:string;note?:string;systemSize?:number;batteryKwh?:number;investment?:number;saving?:number;payback?:number;lat?:number;lng?:number};
 
 export const dynamic='force-dynamic';
 
-export async function GET(){
+export async function GET(req:Request){
  try{
+  const denied=requireAdmin(req);if(denied)return denied;
   const sql=await ensureLeadTable();
   const leads=await sql`SELECT * FROM ves_solar_leads ORDER BY created_at DESC LIMIT 500`;
   return NextResponse.json({ok:true,leads});
